@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Список пользователей</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        ul {
+            list-style-type: none; /* Убираем маркеры списка */
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        li {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        a {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            text-decoration: none;
+            color: white;
+            background-color: #28a745;
+            padding: 10px 15px;
+            border-radius: 5px;
+            width: fit-content;
+        }
+
+        a:hover {
+            background-color: #218838;
+        }
+
+        /* Стили для модального окна */
+        .modal {
+            display: none; /* Скрыто по умолчанию */
+            position: fixed;
+            z-index: 1; /* Сидит поверх */
+            left: 0;
+            top: 0;
+            width: 100%; /* Полная ширина */
+            height: 100%; /* Полная высота */
+            overflow: auto; /* Прокрутка, если необходимо */
+            background-color: rgba(0,0,0,0.4); /* Черный фон с непрозрачностью */
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; /* 15% сверху и центрирование */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Ширина */
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-content textarea {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .modal-content button {
+            background-color: #4CAF50;
+        }
+
+        .modal-content button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Список пользователей</h1>
+    <ul>
+        {% for user in users %}
+            <li>
+                {{ user.username }}
+                <button onclick="openMessageModal('{{ user.username }}')">Написать сообщение</button>
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="/group_chats/">Назад к чатам</a>
+
+    <!-- Модальное окно для отправки сообщения -->
+    <div id="messageModal" class="modal">
+        <div class="modal-content">
+            <span id="closeModal" style="float:right;cursor:pointer;">&times;</span>
+            <h2 id="modalTitle">Написать сообщение</h2>
+            <textarea id="messageText" placeholder="Введите ваше сообщение" rows="4"></textarea>
+            <button id="sendMessageButton">Отправить</button>
+        </div>
+    </div>
+
+    <script>
+        function openMessageModal(username) {
+            document.getElementById('modalTitle').textContent = `Написать сообщение для ${username}`;
+            document.getElementById('messageModal').style.display = "block";
+
+            document.getElementById('sendMessageButton').onclick = async function() {
+                const message = document.getElementById('messageText').value;
+                if (message) {
+                    await sendMessage(username, message);
+                    document.getElementById('messageText').value = ''; // Очистка ввода
+                    document.getElementById('messageModal').style.display = "none"; // Закрытие модального окна
+                } else {
+                    alert('Введите сообщение.');
+                }
+            };
+        }
+
+        function closeMessageModal() {
+            document.getElementById('messageModal').style.display = "none";
+        }
+
+        async function sendMessage(username, message) {
+            const response = await fetch('/api/send_direct_message/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username: username, message: message }),
+            });
+
+            if (response.ok) {
+                alert('Сообщение отправлено.');
+            } else {
+                alert('Ошибка при отправке сообщения.');
+            }
+        }
+
+        document.getElementById('closeModal').onclick = closeMessageModal;
+
+        // Закрытие модального окна при клике вне его
+        window.onclick = function(event) {
+            const modal = document.getElementById('messageModal');
+            if (event.target === modal) {
+                closeMessageModal();
+            }
+        };
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html>

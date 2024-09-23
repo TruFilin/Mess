@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Входящие сообщения</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        ul {
+            list-style-type: none; /* Убираем маркеры списка */
+            padding: 0;
+        }
+
+        li {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 5px 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .message-timestamp {
+            color: #888;
+            font-size: 0.8em;
+        }
+
+        .message-text {
+            flex-grow: 1;
+            padding-left: 10px;
+        }
+
+        a {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            text-decoration: none;
+            color: white;
+            background-color: #007BFF;
+            padding: 10px 15px;
+            border-radius: 5px;
+            width: fit-content;
+        }
+
+        a:hover {
+            background-color: #0056b3;
+        }
+
+        @media (max-width: 600px) {
+            li {
+                flex-direction: column; /* Изменяем направление на мобильных устройствах */
+                align-items: flex-start;
+            }
+
+            .message-text {
+                padding-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Входящие сообщения</h1>
+    <ul>
+        {% for message in messages %}
+            <li>
+                <span class="message-timestamp">{{ message.timestamp }}</span>
+                <span class="message-text">{{ message.sender.username }}: {{ message.message }}</span>
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="/group_chats/">Назад к чатам</a>
+</body>
+</html>
+

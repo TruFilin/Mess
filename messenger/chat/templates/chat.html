@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Чат: {{ chat_name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        p {
+            text-align: center;
+            color: #555;
+        }
+
+        #messages {
+            border: 1px solid #ccc;
+            height: 300px;
+            overflow-y: scroll;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: white;
+            border-radius: 5px;
+        }
+
+        #message-input {
+            width: 75%;
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #send-message {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #send-message:hover {
+            background-color: #45a049;
+        }
+
+        #back-button {
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #back-button:hover {
+            background-color: #0056b3;
+        }
+
+        .message {
+            margin-bottom: 10px;
+        }
+
+        .message span {
+            font-weight: bold;
+            color: #007BFF;
+        }
+
+        @media (max-width: 600px) {
+            #message-input {
+                width: 70%;
+            }
+
+            #send-message {
+                width: 25%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Чат: {{ chat_name }}</h1>
+    <p>Ваш логин: {{ username }}</p>
+    <button id="back-button" onclick="window.location.href='/group_chats/'">Назад к чатам</button>  <!-- Кнопка назад -->
+
+    <div id="messages">
+        {% for message in messages %}
+            <div class="message"><span>{{ message.username.username }}:</span> {{ message.message }}</div>
+        {% endfor %}
+    </div>
+    <input type="text" id="message-input" placeholder="Ваше сообщение" required>
+    <button id="send-message">Отправить</button>
+
+    <script>
+    const username = "{{ username }}";
+
+    document.getElementById('send-message').addEventListener('click', async () => {
+        const messageInput = document.getElementById('message-input');
+        const message = messageInput.value;
+        if (message) {
+            const response = await fetch('/api/send_chat_message/', { // Обернуть в кавычки
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    chat_name: "{{ chat_name }}",
+                    message: message,
+                }),
+            });
+
+            if (response.ok) {
+                const messagesDiv = document.getElementById('messages');
+                const messageElement = document.createElement('div');
+                messageElement.textContent = `${username}: ${message}`;  // Обернуть в обратные кавычки
+                messagesDiv.appendChild(messageElement);
+                messageInput.value = '';  // Очистить поле ввода
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;  // Прокрутить вниз
+            } else {
+                alert('Ошибка отправки сообщения.');
+            }
+        } else {
+            alert('Введите сообщение.');
+        }
+    });
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+</body>
+</html>

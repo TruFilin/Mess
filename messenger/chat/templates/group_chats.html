@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Chats</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        p {
+            text-align: center;
+            color: #555;
+        }
+
+        #chat-name {
+            width: 60%;
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        h2 {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        #chat-list {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        #chat-list div {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 5px;
+            width: 80%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #chat-list div span {
+            flex-grow: 1;
+            text-align: left;
+            padding-left: 10px;
+        }
+
+        @media (max-width: 600px) {
+            #chat-name {
+                width: 100%;
+                margin-right: 0;
+            }
+
+            button {
+                width: 100%;
+                margin-top: 5px;
+            }
+
+            #chat-list div {
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+</head>
+<body>
+    <h1>Добро пожаловать в Group Chats!</h1>
+    <p>Здесь вы можете создать и управлять групповыми чатами.</p>
+
+    <input type="text" id="chat-name" placeholder="Название чата" required>
+    <button id="create-chat">Создать чат</button>
+    <button onclick="window.location.href='/profile/'">Личный кабинет</button>  <!-- Кнопка личного кабинета -->
+    <button onclick="window.location.href='/inbox/'">Входящие сообщения</button>  <!-- Кнопка входящих сообщений -->
+    <button onclick="window.location.href='/users/'">Список пользователей</button>
+    <h2>Список чатов:</h2>
+    <div id="chat-list">
+        {% for chat in chats %}
+            <div id="chat-{{ chat.id }}">
+                <span>{{ chat.name }}</span>
+                <button onclick="enterChat('{{ chat.name }}')">Войти в чат</button>
+                <button onclick="deleteChat({{ chat.id }})">Удалить чат</button>
+            </div>
+        {% endfor %}
+    </div>
+   <script>
+    document.getElementById('create-chat').addEventListener('click', async () => {
+        const chatName = document.getElementById('chat-name').value;
+        if (chatName) {
+            const response = await fetch('/api/create_chat/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ chat_name: chatName }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                addChatToList(data.chat_name);
+                document.getElementById('chat-name').value = '';  // Очистить поле ввода
+            } else {
+                const errorData = await response.json();
+                alert('Ошибка создания чата: ' + errorData.message);
+            }
+        } else {
+            alert('Введите название чата.');
+        }
+    });
+
+    function addChatToList(name) {
+        const chatList = document.getElementById('chat-list');
+        const chatItem = document.createElement('div');
+        chatItem.id = `chat-${name}`; // Устанавливаем id для элемента
+        chatItem.innerHTML = `
+            <span>${name}</span>
+            <button onclick="enterChat('${name}')">Войти в чат</button>
+            <button onclick="deleteChat('${name}')">Удалить чат</button>
+        `;
+        chatList.appendChild(chatItem);
+    }
+
+    async function deleteChat(chatId) {
+        const response = await fetch(`/api/delete_chat/${chatId}/`, { // Правильная строка URL
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+        });
+
+        if (response.ok) {
+            document.getElementById(`chat-${chatId}`).remove(); // Правильный синтаксис
+            alert('Чат успешно удален.');
+        } else {
+            alert('Ошибка удаления чата.');
+        }
+    }
+
+    function enterChat(name) {
+        window.location.href = `/chat/${name}/`;  // Правильный синтаксис URL
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+</body>
+</html>

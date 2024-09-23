@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        p {
+            text-align: center;
+            color: #555;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        label {
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        input[type="file"] {
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        h3 {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        img {
+            display: block;
+            margin: 0 auto;
+            border-radius: 50%; /* Круглая аватарка */
+            border: 2px solid #ddd; /* Граница для аватарки */
+        }
+
+        a {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            text-decoration: none;
+            color: white;
+            background-color: #007BFF;
+            padding: 10px 15px;
+            border-radius: 5px;
+            width: fit-content;
+        }
+
+        a:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Личный кабинет</h1>
+    <p>Добро пожаловать, {{ username }}!</p>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="avatar">Аватарка:</label>
+        <input type="file" name="avatar" accept="image/*">
+        <br>
+        <button type="submit">Сохранить изменения</button>
+    </form>
+
+    {% if user.userprofile.avatar %}
+        <h3>Ваш аватар:</h3>
+        <img src="{{ user.userprofile.avatar.url }}" alt="Avatar" style="width: 100px; height: auto;">
+    {% endif %}
+
+    <a href="/group_chats/">Назад к чатам</a>
+</body>
+</html>
